@@ -7,16 +7,39 @@ class manage {
         el.textContent = txt;
         return el;
     }
-    static createInput(_type, eId, eClassName, placeholder, required) {
+    static createInput(_type, eId, eClassName, placeholder, required, l) {
         const input = document.createElement('input');
         input.id = eId;
         input.placeholder = placeholder;
         input.className = eClassName;
         input.required = required;
+        input.maxLength = l;
         eId !== '' ? this.elementAddId(eId, input) : undefined;
         eClassName !== '' ? input.className = eClassName : undefined;
         return input;
     }
+    static createTextarea(eClassName, cols, rows){
+        const textarea = document.createElement('textarea');
+        textarea.className = eClassName;
+        textarea.cols = cols;
+        textarea.rows = rows;
+        eClassName !== '' ? textarea.className = eClassName : undefined;
+        return textarea;
+    }
+    static createLabel(forVal, text){
+        const label = document.createElement('label');
+        label.setAttribute("for",forVal);
+        label.textContent = text;
+    }
+    static createSelect(eId)
+    static createChecklist(eClassName, checked){
+        const input = document.createElement('input');
+        input.type = 'checkbox';
+        input.checked = checked;
+        input.ClassName = eClassName;
+        return input;
+    }
+
     static elWithClasses(txt = '', eId, eClassName, eTag) {
         const el = document.createElement(eTag);
         el.textContent = txt;
