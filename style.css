@@ -79,7 +79,7 @@ body{
     background: rgba(207, 44, 44, 0.774);
 }
 .fa-pen-square:hover{ 
-    color: white;
+    color: rgb(126, 113, 113);
 }
 #prj-container{
     display: flex;
@@ -115,9 +115,9 @@ body{
     border: none;
     cursor: pointer;
 }
-.dropdown:hover > .dropdown-content{
+/* .dropdown:hover > .dropdown-content{
     visibility: visible;
-}
+} */
 .dropdown-content {
     visibility: hidden;
     position: absolute;
@@ -151,6 +151,10 @@ body{
 }
 .prj-items > p {
     color: black;
+    width: 200px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
 }
 .prj-items:not(:last-child){
     border-bottom: 1px solid rgb(1,1,1,0.25);
@@ -178,16 +182,22 @@ body{
     height: 70px;
 }
 #prj-header{
-    border: 1px solid white;
-    height: 60px;
     line-height: 1.7;
     padding: 0 10px;
     color: white;
     font-weight: 700;
-    text-shadow: -2px -2px rgb(24, 20, 20);
-}
-#prj-header{
     font-size: 2.2em;
+    width: 40%;
+    text-shadow: -2px -2px rgb(24, 20, 20);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+#prj-rnm-desc{
+    cursor: pointer;
+}
+#prj-rnm-desc:hover{
+    color: rgb(141, 113, 113);
 }
 #prj-desc-wrapper{
     display: flex;
@@ -207,6 +217,15 @@ body{
     color: white;
     transform: scale(1.7);
 }
+#prj-desc-wrapper > textarea{
+    text-align: left;
+    height: 60px;
+    padding: 0 15px;
+    resize: none;
+    background: none;
+    color:white;
+    border: 1px solid white;
+}
 #task-feature-holder{
     display: flex;
     justify-content: space-around;
@@ -220,6 +239,24 @@ body{
     border: 1px solid white;
     min-width: 90%;
     height: 75vh;
+}
+.taskbox{
+    display: flex;
+    width: 90%;
+    padding: 3px 8px;
+    margin: 10px auto;
+    background: var(--light-font);
+}
+.taskbox > input { margin-right: 20px;}
+.taskbox > p{
+    color: black;
+    padding: 10px 15px;
+}
+.taskbox > p{
+    border-left: 1px solid rgba(1,1,1,0.2);
+}
+.todo{
+    width: 90%;
 }
 #empty-task-text{
     padding: 45px;
