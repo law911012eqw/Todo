@@ -1,4 +1,5 @@
 'use strict'
+
 //This file consist of custom function that mainly create or manage DOM-related stuff a.k.a helpers
 class manage {
     static createPara(txt, eId) {
@@ -30,8 +31,25 @@ class manage {
         const label = document.createElement('label');
         label.setAttribute("for",forVal);
         label.textContent = text;
+        return label;
     }
-    static createSelect(eId)
+    static createSelect(eId){
+        const select = document.createElement('select');
+        select.id = eId;
+        return select;
+    }
+    static createSelectOption(value,text){
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = text;
+        return option;
+    }
+    static createSubmit(text){
+        const input = document.createElement('input');
+        input.type = 'submit';
+        input.value = text;
+        return input;
+    }
     static createChecklist(eClassName, checked){
         const input = document.createElement('input');
         input.type = 'checkbox';
@@ -50,11 +68,6 @@ class manage {
     }
     static elementAddId(id, name) {
         name.id = id;
-    }
-    static appendMultipleEl(parent, child) {
-
-        parent.append(child);
-        console.log('debug purposes');
     }
     static modifyAttr(name, _type, attr) {
         name.setAttribute(_type, attr);
