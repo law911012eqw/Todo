@@ -3,7 +3,7 @@
 /*The responsibility of this file is to display DOMs including a property 
 modification */
 import { manage } from './helpers.js'
-import { themes } from './modules/themes.js'
+import { themes, COG, visualSettings } from './modules/themes.js'
 
 const myProjects = [];
 
@@ -39,6 +39,8 @@ const DOM = (() => {
         manage.elWithClasses('', 'sidebar', 'sidebar', 'div');
     const sidebarHeader =
         manage.elWithClasses('', 'sidebar-header', 'sidebar-headers', 'div');
+    const prjNum =
+        manage.createPara(`0/24`, 'prj-total');
 
     //sidebar stuff
     const filterContainer =
@@ -86,7 +88,7 @@ const DOM = (() => {
     const projectDescIcon =
         manage.elWithClasses('', 'prj-rnm-desc', `fas fa-pen-square`, 'div')
     const tempTextarea =
-        manage.createTextarea('temp-textarea', 30, 10);
+        manage.createTextarea('temp-textarea', 30, 10, true);
     const taskSettings =
         manage.elWithClasses('', '', `fas fa-cog`, 'i');
     const taskFeatures =
@@ -111,7 +113,7 @@ const DOM = (() => {
             manage.elWithClasses(myProjects[prjIndex].tasks[i].desc, '', 'todo', 'p');
         //const taskDue = 
         const taskPrio =
-            manage.elWithClasses(myProjects[prjIndex].tasks[i].priority, '', 'task-prio', 'p');
+            manage.elWithClasses(`PL: ${myProjects[prjIndex].tasks[i].priority}`, '', 'task-prio', 'p');
         DOM.taskContainer.append(taskContainer);
         taskContainer.append(checklist, taskDesc, taskPrio);
     }
@@ -120,6 +122,12 @@ const DOM = (() => {
         manage.modifyAttr(projectHeader, "style", "visibility: hidden");
         manage.modifyAttr(projectDescWrapper, "style", "visibility: hidden");
         manage.modifyAttr(sortPrjContents, "style", "visibility: hidden;");
+    }
+    function displayTotal(total) {
+        const prjNum =
+            manage.createPara(`${total}/24`, 'prj-total');
+        sidebarHeader.removeChild(document.getElementById('prj-total'));
+        sidebarHeader.insertBefore(prjNum, addButton);
     }
     return {
         themeOuter, themeInner,
@@ -136,7 +144,8 @@ const DOM = (() => {
         projectHeadContainer, projectDescWrapper,
         projectDescIcon, sortTskContents,
         sortTskButtonWrapper, sortTskButton,
-        displayTaskItem, hideTaskTopSection
+        prjNum, displayTaskItem,
+        hideTaskTopSection, displayTotal
     }
 })()
 
@@ -150,7 +159,7 @@ const attachDOM = () => {
     //sidebar section
     DOM.sidebarContainer
         .append(DOM.sidebarHeader, DOM.filterContainer, DOM.projectContainer);
-    DOM.sidebarHeader.append(manage.createPara('My Projects', ''), DOM.addButton);
+    DOM.sidebarHeader.append(manage.createPara('My Projects', ''), DOM.prjNum, DOM.addButton);
 
     //sidebar -> filter/sort section
     DOM.filterContainer.append(DOM.sortPrjButtonWrapper, DOM.searchbarWrapper);
@@ -176,7 +185,7 @@ const attachDOM = () => {
     DOM.projectHeadContainer.append(DOM.projectHeader, DOM.projectDescWrapper, DOM.taskFeatures);
     DOM.projectDescWrapper.append(
         DOM.projectDescIcon,
-        manage.createPara('Write your description here.', 'prj-desc-txt')
+        DOM.tempTextarea
     );
     DOM.taskFeatures.append(DOM.sortTskButtonWrapper, DOM.taskSettings);
     DOM.taskContainer.append(manage.createPara
@@ -188,7 +197,7 @@ const attachDOM = () => {
     DOM.sortTskContents.append(
         manage.createPara('Sort by', ''),
         manage.elWithClasses('By Due Date', 'sort-due', 'sort-items', 'div'),
-        manage.elWithClasses('By Title', 'sort-tasktitle', 'sort-items', 'div'),
+        manage.elWithClasses('By Task', 'sort-tasktitle', 'sort-items', 'div'),
         manage.elWithClasses('By Priority', 'sort-priority', 'sort-items', 'div'),
     )
 }
@@ -228,8 +237,10 @@ function colorModifier() {
 function sidebarEvents() {
     // display textbox to add a project
     DOM.addButton.addEventListener('click', function () {
-        DOM.prjList.append(DOM.createProject);
-        DOM.createProject.focus();
+        if (myProjects.length < 24) {
+            DOM.prjList.append(DOM.createProject);
+            DOM.createProject.focus();
+        }
     })
     //empties the filter search bar
     DOM.emptyFilterBox.addEventListener('click', function () {
@@ -241,14 +252,14 @@ function sidebarEvents() {
         if (e.key === 'Enter' && this.value !== '') {
             //get the nodes of all project items
             const prjItems = document.querySelectorAll('.prj-items');
-            removeAllPrjItems(DOM.prjList); //self explanatory
+            removeAllItems(DOM.prjList); //self explanatory
             //adding default task object data
             const tasks = [];
             let task = new Tasks
                 (false,
                     "Click the circle to compete this task",
                     "",
-                    "low");
+                    '2');
             tasks.push(task);
             //iterate through the loop to remove active state
             disableActiveStatus();
@@ -261,6 +272,7 @@ function sidebarEvents() {
                 tasks,
                 true
             );
+            DOM.displayTotal(myProjects.length);
             //populate the parent with prj item elements
             populatePrjItems();
             //empty value after adding project
@@ -278,41 +290,58 @@ function sidebarEvents() {
     });
     //sort project by name
     document.getElementById('sort-title').addEventListener('click', () => {
-        myProjects.sort((a, b) => (a.name > b.name) ? 1 : -1);
-        removeAllPrjItems(DOM.prjList);
+        myProjects.sort((a, b) => (a.name.toUpperCase() > b.name.toUpperCase()) ? 1 : -1)
+        removeAllItems(DOM.prjList);
         populatePrjItems();
-    })
+    });
     //sort by creation date
     document.getElementById('sort-date').addEventListener('click', () => {
         myProjects.sort((a, b) => (a.id > b.id) ? 1 : -1);
-        removeAllPrjItems(DOM.prjList);
+        removeAllItems(DOM.prjList);
+        populatePrjItems();
+    });
+    document.getElementById('sort-num-tasks').addEventListener('click', () => {
+        myProjects.sort((a, b) => (a.tasks.length < b.tasks.length) ? 1 : -1);
+        removeAllItems(DOM.prjList);
         populatePrjItems();
     });
     //allow the user to write a description about the project 
     //note: the project is an alternative keyword as a folder to multiple to do lists
     document.getElementById('prj-rnm-desc').addEventListener('click', function () {
-        const desc = document.getElementById('prj-desc-txt');
-        const prjDescWrapper = document.getElementById('prj-desc-wrapper');
-        if (DOM.tempTextarea.value == '') {
+        if (DOM.tempTextarea.disabled == true) {
+            DOM.tempTextarea.disabled = false;
             DOM.tempTextarea.focus();
-            prjDescWrapper.replaceChild(DOM.tempTextarea, desc);
+            myProjects.forEach(function (e, i) {
+                if (myProjects[i].active == true) {
+                    DOM.tempTextarea.value = myProjects[i].description;
+                }
+            })
         }
         else {
-            prjDescWrapper.replaceChild(desc, DOM.tempTextarea);
+            myProjects.forEach(function (e, i) {
+                if (myProjects[i].active == true) {
+                    myProjects[i].description = DOM.tempTextarea.value;
+                }
+            })
+            DOM.tempTextarea.disabled = true;
         }
     });
-    DOM.tempTextarea.addEventListener('keypress', function (e) {
-        const prjDescWrapper = document.getElementById('prj-desc-wrapper');
-        const desc = document.getElementById('prj-desc-txt');
-        // if (e.key === 'Enter' || ) {
-        //     prjDescWrapper.replaceChild(desc, DOM.tempTextarea);
-        // }
-    })
     //filter feature
     DOM.searchProjects.addEventListener('input', prjFilterItems);
 }
-
-function sortMouseOver(obj,contents) {
+function sortByPriority(i) {
+    document.getElementById('sort-priority').addEventListener('click', function () {
+        myProjects[i].tasks.sort((a, b) => (a.priority < b.priority) ? 1 : -1);
+        updateDisplay();
+    });
+}
+function sortByTODO(i) {
+    document.getElementById('sort-tasktitle').addEventListener('click', function () {
+        myProjects[i].tasks.sort((a, b) => (a.toUpperCase().desc < b.toUpperCase().desc) ? 1 : -1);
+        updateDisplay();
+    });
+}
+function sortMouseOver(obj, contents) {
     //displays dropdown content after hover
     obj.addEventListener('mouseover', () => {
         contents.style.visibility = "visible";
@@ -321,6 +350,9 @@ function sortMouseOver(obj,contents) {
         }, 3000);
     });
 }
+
+/*submit a todo -> push info to array -> remove all todo display elements
+ -> re-render todo display to update*/
 function submitForm() {
     document.querySelector('.task-form').addEventListener('submit', function (e) {
         e.preventDefault();
@@ -338,8 +370,7 @@ function submitForm() {
                 myProjects[i].tasks.push(task);
             }
         }
-        removeAllTaskItems(DOM.taskContainer);
-        populateTaskItems(prjIndex);
+        updateDisplay();
     });
 }
 
@@ -367,36 +398,48 @@ function populatePrjItems() {
         //display top header of task container and create task elements
         if (myProjects[i].active == true) {
             displayTaskTopElements(-1, len);
-            removeAllPrjItems(DOM.taskContainer);
-            populateTaskItems(i);
+            updateDisplay();
         }
         setActiveStatus();
     }
 }
-function removePrjItem() {
+function removePrjItem(i) {
     //remove project item
     document.querySelectorAll(`.prj-remove`).forEach((el, index) => {
         el.addEventListener('click', (e) => {
             e.stopPropagation();
-            clearTasksIfActiveNotExists(index);
-            myProjects.splice(index, 1);
-            removeAllPrjItems(DOM.prjList);
-            populatePrjItems();
+            if (myProjects[index].id == i + 1) {
+                console.log("atleast once");
+                clearTasksIfActiveNotExists(i);
+                myProjects.splice(i, 1);
+                DOM.displayTotal(myProjects.length);
+                removeAllItems(DOM.prjList);
+                populatePrjItems();
+                prjIdDecrement(i);
+            }
         });
     });
 }
-
+//decrement the greater id than deleted object by one  [note: id property is used as a creation date]
+//That is the purpose of the id and this function
+function prjIdDecrement(id) {
+    for (let i = 0; i < myProjects.length; i++) {
+        if (myProjects[i].id > id) {
+            myProjects[i].id--;
+        }
+    }
+}
 //clear every ask element if deleted project/folder is active
 function clearTasksIfActiveNotExists(i) {
     if (myProjects[i].active === true) {
-        removeAllTaskItems(DOM.taskContainer);
+        removeAllItems(DOM.taskContainer);
         DOM.hideTaskTopSection();
         DOM.taskContainer.appendChild(manage.createPara
             ('You don\'t have any task at the moment.', 'empty-task-text'));
     }
 }
 //remove all the project items as a process to populate effectively
-function removeAllPrjItems(parent) {
+function removeAllItems(parent) {
     while (parent.firstChild) {
         parent.removeChild(parent.firstChild);
     }
@@ -420,7 +463,7 @@ function addProjectItemContents(e, l, i) {
         manage.elWithClasses('', '', `fas fa-trash-alt prj-remove`, 'i'));
     changePrjSelectStatus(prjItem, i);
     console.log(`yes ${i}`);
-    removePrjItem();
+    removePrjItem(i);
 }
 function renamePrjItem() {
     //remove project item
@@ -430,12 +473,11 @@ function renamePrjItem() {
             e.replaceChild(
 
             )
-            removeAllPrjItems(DOM.prjList);
+            removeAllItems(DOM.prjList);
             populatePrjItems();
         });
     });
 }
-
 function changePrjSelectStatus(item, i) {
     if (myProjects[i].active == true) {
         item.classList.add('prj-active');
@@ -448,13 +490,14 @@ function changePrjSelectStatus(item, i) {
 function displayTaskTopElements(i, l) {
     DOM.projectHeader.style.visibility = "visible";
     DOM.projectDescWrapper.style.visibility = "visible";
+
     if (i == -1) {
         DOM.projectHeader.textContent = myProjects[l].name;
-        console.log(`This is the latest project = ${myProjects[l].name}`);
+        DOM.tempTextarea.value = myProjects[l].description;
     }
     else {
-        console.log(`This is the clicked project = ${myProjects[i].name}`);
         DOM.projectHeader.textContent = myProjects[i].name;
+        DOM.tempTextarea.value = myProjects[i].description;
     }
 }
 function createTaskForm() {
@@ -481,26 +524,27 @@ function createTaskForm() {
     DOM.taskContainer.appendChild(taskForm);
     taskForm.append(upperForm, submit);
     ddPrio.append(
-        manage.createSelectOption('low', 'Low'),
-        manage.createSelectOption('medium', 'Medium'),
-        manage.createSelectOption('high', 'High'))
+        manage.createSelectOption('1', '1'),
+        manage.createSelectOption('2', '2'),
+        manage.createSelectOption('3', '3'),
+        manage.createSelectOption('4', '4'),
+        manage.createSelectOption('5', '5')
+    );
     upperForm.append(input, labelPrio, ddPrio);
     submitForm();
 }
 
 function populateTaskItems(prjIndex) {
-    //console.log(`the length is ${myProjects[prjIndex].tasks.length}`);
+    console.log('t00');
     for (let i = 0; i < myProjects[prjIndex].tasks.length; i++) {
         DOM.displayTaskItem(prjIndex, i);
+        console.log('t11');
     }
     createTaskForm();
-}
 
-//remove all the project items as a process to populate effectively
-function removeAllTaskItems(parent) {
-    while (parent.firstChild) {
-        parent.removeChild(parent.firstChild);
-    }
+    //add event listener every data update
+    sortByPriority(prjIndex);
+    sortByTODO(prjIndex);
 }
 
 //disable every active element to choose a new active element
@@ -533,19 +577,17 @@ function updateDisplay() {
     for (let i = 0; i < len; i++) {
         if (myProjects[i].active === true) {
             displayTaskTopElements(i, len);
-            removeAllTaskItems(DOM.taskContainer);
+            removeAllItems(DOM.taskContainer);
             populateTaskItems(i);
         }
     }
-}
-function currentProjectIndex(i) {
-    return i;
 }
 
 //function dataStorage()
 //display, so the user/client can see the elements
 const output = () => {
     attachDOM();
+    visualSettings();
     DOM.hideTaskTopSection();
     colorModifier();
     sidebarEvents();
