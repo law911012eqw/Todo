@@ -19,11 +19,13 @@ class manage {
         eClassName !== '' ? input.className = eClassName : undefined;
         return input;
     }
-    static createTextarea(eClassName, cols, rows){
+    static createTextarea(eClassName, cols, rows, disabled, value){
         const textarea = document.createElement('textarea');
         textarea.className = eClassName;
         textarea.cols = cols;
         textarea.rows = rows;
+        textarea.disabled = disabled;
+        textarea.value = value;
         eClassName !== '' ? textarea.className = eClassName : undefined;
         return textarea;
     }
