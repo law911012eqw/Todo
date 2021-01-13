@@ -29,6 +29,13 @@ class manage {
         eClassName !== '' ? textarea.className = eClassName : undefined;
         return textarea;
     }
+    static createDate(value, min){
+        const date = document.createElement('input');
+        date.type = "date";
+        date.value = value;
+        date.min = min;
+        return date;
+    }
     static createLabel(forVal, text){
         const label = document.createElement('label');
         label.setAttribute("for",forVal);
