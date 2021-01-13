@@ -1,21 +1,19 @@
 # Todo
-This is an app mainly focused on task-oriented users. 
+Todo-it is an app that allows the user to manage task in an organizational method. To keep it simple, it is mainly focused on task-oriented users, or people who needs a tool to achieve their tasks/small goals with high feasibility which vary from each individual itself. 
 
-Main sections
+### TODO features
 * Main Task Container
     * Allows the user to change the list of task into board/tiles format
-    * Each task item have name, description, priority, due dates, notes and checklist.
-    * Delete all finished tasks
-    * Statistics
+    * Each task item have task description, priority, and due date.
+    * More than one finished tasks can be removed
     * Implementation of a sorting system that allows the user to sort ascendingly (descending is unnecessary at this point).
-
 * Sidebar
-    * Projects can be added, deleted, modify its name and open by viewing the tasks within.
+    * Existing projects/tasks can be updated throughout property modification.
     * Filter/Sorting system
-* Settings - Allows the user to modify certain properties of todo-lists
-    * Color theme
-    * Clear local data
-    * 
+    * Indicates the current active project 
+    * Search bar that filters the existing projects
+    * Projects more than 24 are not allowed
+* Settings
+    * Themes - 4 main colors
+    * Local Data support - can be cleared
 
-Others - Self Challenge
-* Notify deadline at the start of website if there's a task that is urgent or near the due date.
