@@ -1,5 +1,5 @@
 # Todo
-Todo-it is an app that allows the user to manage task in an organizational method. To keep it simple, it is mainly focused on task-oriented users, or people who needs a tool to achieve their tasks/small goals with high feasibility which vary from each individual itself. 
+Todo-it is an app that allows the user to manage task in an organizational approach. To keep it simple, it is mainly focused on task-oriented users, or people who needs a tool to achieve their tasks/small goals with high feasibility which vary from the individual itself. 
 
 ### TODO features
 * Main Task Container
