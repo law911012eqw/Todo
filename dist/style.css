@@ -16,6 +16,9 @@ p{
 button{
     cursor: pointer;
 }
+input{
+    outline: none;
+}
 body{
     font-family: 'Ubuntu', sans-serif;
     -webkit-user-select: none;
@@ -459,22 +462,22 @@ body{
 }
 /*image sources*/
 #lbl-red{
-    background-image: url('/dist/graphics/todo_themes/template_red.jpg');
+    background-image: url('graphics/todo_themes/template_red.jpg');
     width: 100px;
     height: 100px;
 }
 #lbl-blue{
-    background-image: url('/dist/graphics/todo_themes/template_blue.jpg');
+    background-image: url('graphics/todo_themes/template_blue.jpg');
     width: 100px;
     height: 100px;
 }
 #lbl-green{
-    background-image: url('/dist/graphics/todo_themes/template_green.jpg');
+    background-image: url('graphics/todo_themes/template_green.jpg');
     width: 100px;
     height: 100px;
 }
 #lbl-yellow{
-    background-image: url('/dist/graphics/todo_themes/template_yellow.jpg');
+    background-image: url('graphics/todo_themes/template_yellow.jpg');
     width: 100px;
     height: 100px;
 }
