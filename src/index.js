@@ -95,7 +95,7 @@ const DOM = (() => {
     const projectDescIcon =
         manage.elWithClasses('', 'prj-rnm-desc', `fas fa-pen-square`, 'i')
     const tempTextarea =
-        manage.createTextarea('temp-textarea', 30, 10, true,'Write description here.');
+        manage.createTextarea('temp-textarea', 30, 10, true, 'Write description here.');
     const taskSettings =
         manage.elWithClasses('', '', `fas fa-cog`, 'i');
     const taskFeatures =
@@ -427,15 +427,15 @@ function sidebarEvents() {
         COG.settingsBtnCont.append(COG.btnClose);
         COG.settingsMain.append(COG.btnClearData, COG.settingsBtnCont);
     });
-    COG.btnApply.addEventListener('click', function(){
+    COG.btnApply.addEventListener('click', function () {
         const themes = document.querySelectorAll('input[name=themes]');
         console.log(themes.length)
-            for(let i = 0; i < themes.length; i++){
-                if(themes[i].checked){ 
-                    colorModifier(i);
-                    localStorage.setItem("savedTheme", i);
-                }
+        for (let i = 0; i < themes.length; i++) {
+            if (themes[i].checked) {
+                colorModifier(i);
+                localStorage.setItem("savedTheme", i);
             }
+        }
     })
     COG.btnClearData.addEventListener('click', function () {
         localStorage.removeItem("savedData");
@@ -444,6 +444,10 @@ function sidebarEvents() {
         DOM.displayTotal(0);
         clearTasksContents();
     });
+    //add event listener every data update
+    sortByPriority();
+    sortByTODO();
+    sortByDueDate();
 }
 
 //iterate throughout the checked tasks thene re-display the updated array
@@ -451,7 +455,7 @@ function taskCompletionBtn(prjIndex) {
     const todos = document.querySelectorAll('.task-checklist');
     let completedTasks = 0;
     let index = todos.length;
-    while (index--){
+    while (index--) {
         if (todos[index].checked == true) {
             completedTasks++;
             myProjects[prjIndex].tasks.splice(index, 1);
@@ -461,25 +465,37 @@ function taskCompletionBtn(prjIndex) {
     //saveToLocalStorage();
 }
 //sort todos by priority
-function sortByPriority(i) {
+function sortByPriority() {
     document.getElementById('sort-priority').addEventListener('click', function () {
-        myProjects[i].tasks.sort((a, b) => (a.priority < b.priority) ? 1 : -1);
-        updateDisplay();
+        for(let i = 0; i < myProjects.length; i++){
+            if(myProjects[i].active == true){
+                myProjects[i].tasks.sort((a, b) => (a.priority < b.priority) ? 1 : -1);
+                updateDisplay();
+            }
+        }
     });
 }
 
 //sort todos alphabetically
 function sortByTODO(i) {
     document.getElementById('sort-tasktitle').addEventListener('click', function () {
-        myProjects[i].tasks.sort((a, b) => (a.desc.toUpperCase() > b.desc.toUpperCase()) ? 1 : -1);
-        updateDisplay();
+        for(let i = 0; i < myProjects.length; i++){
+            if(myProjects[i].active == true){
+                myProjects[i].tasks.sort((a, b) => (a.desc.toUpperCase() > b.desc.toUpperCase()) ? 1 : -1);
+                updateDisplay();
+            }
+        }
     });
 }
 
 function sortByDueDate(i) {
     document.getElementById('sort-due').addEventListener('click', function () {
-        myProjects[i].tasks.sort((a, b) => (a.dueDate > b.dueDate) ? 1 : -1);
-        updateDisplay();
+        for(let i = 0; i < myProjects.length; i++){
+            if(myProjects[i].active == true){
+                myProjects[i].tasks.sort((a, b) => (a.dueDate > b.dueDate) ? 1 : -1);
+                updateDisplay();
+            }
+        }
     });
 }
 //show sort contents when btn is hovered
@@ -609,7 +625,7 @@ function clearTasksIfActiveNotExists(i) {
     saveToLocalStorage();
 }
 
-function clearTasksContents(){
+function clearTasksContents() {
     removeAllItems(DOM.taskContainer);
     DOM.hideTaskTopSection();
     DOM.taskContainer.appendChild(manage.createPara
@@ -682,7 +698,7 @@ function createTaskForm() {
         );
     input.autocomplete = 'off';
     const lblDate =
-        manage.createLabel('due-date', 'Due Date: ','', '');
+        manage.createLabel('due-date', 'Due Date: ', '', '');
 
     //default date format to yyyy-mm-dd format - used for date-fns input
     let today = new Date();
@@ -700,7 +716,7 @@ function createTaskForm() {
     const duedateWrapper = manage.elWithClasses('', '', '', 'div')
     const prioWrapper = manage.elWithClasses('', '', '', 'div')
     const lblPrio =
-        manage.createLabel('priority', 'Priority level: ', '','');
+        manage.createLabel('priority', 'Priority level: ', '', '');
     const ddPrio =
         manage.createSelect('form-prio');
     const submit =
@@ -729,13 +745,7 @@ function populateTaskItems(prjIndex) {
     DOM.taskCompletion.onclick = () => {
         taskCompletionBtn(prjIndex);
     }
-        createTaskForm();
-
-
-    //add event listener every data update
-    sortByPriority(prjIndex);
-    sortByTODO(prjIndex);
-    sortByDueDate(prjIndex);
+    createTaskForm();
 }
 
 //disable every active element to choose a new active element
