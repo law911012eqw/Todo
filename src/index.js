@@ -250,7 +250,7 @@ const attachDOM = () => {
         DOM.renamePrjCancel
     )
     DOM.renamePrjBox.append(
-        manage.createPara('Rename your project to:', ''),
+        manage.createPara('Rename your project to:', 'lbl-rename'),
         DOM.renamePrjInput,
         DOM.renameBtnsContainer
     )
@@ -569,6 +569,7 @@ function renamePrjItem(i) {
             e.stopPropagation();
             if (index == i) {
                 document.getElementById('content').append(DOM.renamePrjModal);
+                document.querySelector('#lbl-rename').style.color = 'black';
                 DOM.renamePrjInput.value = myProjects[i].name;
                 btnRenamePrjItem(i);
                 btnCancelPrjRename();
