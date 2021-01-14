@@ -20,6 +20,9 @@
   },
   "homepage": "https://github.com/law911012eqw/Todo-list#readme",
   "devDependencies": {
+    "eslint": "^7.17.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1",
     "webpack": "^5.12.2",
     "webpack-cli": "^4.3.1"
   },
