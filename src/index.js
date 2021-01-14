@@ -2,10 +2,17 @@
 
 /*The responsibility of this file is to display DOMs including a property 
 modification */
+import { formatDistanceToNow } from 'date-fns'
 import { manage } from './helpers.js'
 import { themes, COG, visualSettings } from './modules/themes.js'
 
-const myProjects = [];
+//global data
+let myProjects = [];
+let themeNum = 0;
+if (localStorage.getItem("savedData") !== null) {
+    myProjects = JSON.parse(localStorage.getItem("savedData"));
+    themeNum = localStorage.getItem("savedTheme");
+}
 
 class Projects {
     constructor(name, description, id, tasks, active) {
@@ -40,7 +47,7 @@ const DOM = (() => {
     const sidebarHeader =
         manage.elWithClasses('', 'sidebar-header', 'sidebar-headers', 'div');
     const prjNum =
-        manage.createPara(`0/24`, 'prj-total');
+        manage.createPara(`${myProjects.length}/24`, 'prj-total');
 
     //sidebar stuff
     const filterContainer =
@@ -54,7 +61,7 @@ const DOM = (() => {
     const sortPrjButtonWrapper =
         manage.elWithClasses('', '', `dropdown`, 'div');
     const sortPrjButton =
-        manage.elWithClasses('Sort by', '', `dropbtn`, 'button');
+        manage.elWithClasses('', '', `dropbtn`, 'button');
     const sortPrjContents =
         manage.elWithClasses('', '', `dropdown-content`, 'div')
 
@@ -62,7 +69,7 @@ const DOM = (() => {
     const emptyFilterBox =
         manage.elWithClasses('', '', `fas fa-times`, 'i');
     const searchProjects =
-        manage.createInput('text', 'prj-filter', 'searchbar', 'Search for projects', false, "32");
+        manage.createInput('text', 'prj-filter', 'searchbar', 'Search for projects', false, "62");
     const searchbarWrapper =
         manage.elWithClasses('', 'searchbar-wrapper', 'searchbar-wrapper', 'div');
 
@@ -72,7 +79,7 @@ const DOM = (() => {
     const prjList =
         manage.elWithClasses('', 'prj-list', '', 'ul');
     const createProject =
-        manage.createInput('text', 'prj-create', '', 'Add new project', false, "32");
+        manage.createInput('text', 'prj-create', '', 'Add new project', false, "62");
 
     //task container
     const mainSection =
@@ -86,36 +93,62 @@ const DOM = (() => {
     const projectDescWrapper =
         manage.elWithClasses('', 'prj-desc-wrapper', '', 'div');
     const projectDescIcon =
-        manage.elWithClasses('', 'prj-rnm-desc', `fas fa-pen-square`, 'div')
+        manage.elWithClasses('', 'prj-rnm-desc', `fas fa-pen-square`, 'i')
     const tempTextarea =
-        manage.createTextarea('temp-textarea', 30, 10, true);
+        manage.createTextarea('temp-textarea', 30, 10, true,'Write description here.');
     const taskSettings =
         manage.elWithClasses('', '', `fas fa-cog`, 'i');
     const taskFeatures =
         manage.elWithClasses('', 'task-feature-holder', '', 'div');
     const taskContainer =
         manage.elWithClasses('', 'task-container', 'task-container', 'div');
+    const taskCompletion =
+        manage.elWithClasses('Complete tasks', 'task-finish-btn', '', 'button');
 
     //sorting task feature
     const sortTskButtonWrapper =
         manage.elWithClasses('', '', `dropdown`, 'div');
     const sortTskButton =
-        manage.elWithClasses('Sort by', '', `dropbtn`, 'button');
+        manage.elWithClasses('', 'tsk-dropbtn', `dropbtn`, 'button');
     const sortTskContents =
-        manage.elWithClasses('', '', `dropdown-content`, 'div')
+        manage.elWithClasses('', '', `dropdown-content`, 'div');
+
+    const renamePrjModal =
+        manage.elWithClasses('', '', 'prj-rnm-modal', 'div');
+    const renamePrjBox =
+        manage.elWithClasses('', '', 'prj-rnm-box', 'div');
+    const renamePrjInput =
+        manage.createInput('text', 'prj-rnm-input', '', '', true, '62');
+    const renameBtnsContainer =
+        manage.elWithClasses('', '', '', 'div');
+    const renamePrjButton =
+        manage.elWithClasses('Rename', 'prj-rnm-btn', '', 'button');
+    const renamePrjCancel =
+        manage.elWithClasses('Cancel', 'prj-rnm-cancel', '', 'button');
 
     function displayTaskItem(prjIndex, i) {
         const taskContainer =
             manage.elWithClasses('', '', 'taskbox', 'div');
         const checklist =
-            manage.createChecklist('task-checklist', false);
+            manage.createChecklist('task-checklist');
         const taskDesc =
             manage.elWithClasses(myProjects[prjIndex].tasks[i].desc, '', 'todo', 'p');
-        //const taskDue = 
+
+        //due date format - splitting y/d/m as an input to date-fns function
+        const taskDueDate = myProjects[prjIndex].tasks[i].dueDate.toString();
+        const arrDueDate = taskDueDate.split("-");
+        const dueYear = Number(arrDueDate[0]);
+        const dueMonth = Number(arrDueDate[1]);
+        const dueDate = Number(arrDueDate[2]);
+
+        const taskDue =
+            manage.createPara(`due in ${formatDistanceToNow(new Date(dueYear, dueMonth - 1, dueDate))}`, 'todo-due');
         const taskPrio =
-            manage.elWithClasses(`PL: ${myProjects[prjIndex].tasks[i].priority}`, '', 'task-prio', 'p');
+            manage.elWithClasses(`PL: ${(myProjects[prjIndex].tasks[i].priority)}`, '', 'task-prio', 'p');
+        const taskModify =
+            manage.elWithClasses('', '', `fas fa-ellipsis-v`, 'i');
         DOM.taskContainer.append(taskContainer);
-        taskContainer.append(checklist, taskDesc, taskPrio);
+        taskContainer.append(checklist, taskDesc, taskDue, taskPrio, taskModify);
     }
     //hidden elements to be visible later
     function hideTaskTopSection() {
@@ -145,14 +178,18 @@ const DOM = (() => {
         projectDescIcon, sortTskContents,
         sortTskButtonWrapper, sortTskButton,
         prjNum, displayTaskItem,
-        hideTaskTopSection, displayTotal
+        hideTaskTopSection, displayTotal,
+        renamePrjModal, renamePrjBox,
+        renamePrjInput, renameBtnsContainer,
+        renamePrjButton, renamePrjCancel,
+        taskCompletion
     }
 })()
 
 //this appends the children to their corresponding parents
 const attachDOM = () => {
     //main theme section
-    document.getElementById('content').appendChild(DOM.themeOuter);
+    document.getElementById('content').append(DOM.themeOuter, DOM.taskCompletion);
     DOM.themeOuter.appendChild(DOM.themeInner);
     DOM.themeInner.append(DOM.sidebarContainer, DOM.mainSection);
 
@@ -165,18 +202,23 @@ const attachDOM = () => {
     DOM.filterContainer.append(DOM.sortPrjButtonWrapper, DOM.searchbarWrapper);
 
     //filter section
-    DOM.searchbarWrapper
-        .append(DOM.magnifyIcon, DOM.searchProjects, DOM.emptyFilterBox);
+    DOM.searchbarWrapper.append(
+        DOM.magnifyIcon,
+        DOM.searchProjects,
+        DOM.emptyFilterBox
+    );
 
     //sort project section
     DOM.sortPrjButtonWrapper.append(DOM.sortPrjButton, DOM.sortPrjContents);
-    DOM.sortPrjButton.appendChild(manage.elWithClasses('', '', `fas fa-sort-down`, 'i'));
-    DOM.sortPrjContents.append(
+    DOM.sortPrjButton.append(
         manage.createPara('Sort by', ''),
+        manage.elWithClasses('', '', `fas fa-sort-down`, 'i')
+    );
+    DOM.sortPrjContents.append(
         manage.elWithClasses('Creation Date', 'sort-date', 'sort-items', 'div'),
         manage.elWithClasses('Title', 'sort-title', 'sort-items', 'div'),
-        manage.elWithClasses('# of tasks', 'sort-num-tasks', 'sort-items', 'div'),
-    )
+        manage.elWithClasses('# of tasks', 'sort-num-tasks', 'sort-items', 'div')
+    );
     //sidebar -> project section
     DOM.projectContainer.appendChild(DOM.prjList);
 
@@ -193,43 +235,62 @@ const attachDOM = () => {
 
     //sort task section
     DOM.sortTskButtonWrapper.append(DOM.sortTskButton, DOM.sortTskContents);
-    DOM.sortTskButton.appendChild(manage.elWithClasses('', '', `fas fa-sort-down`, 'i'));
+    DOM.sortTskButton.append(
+        manage.createPara('Sort by', 'prj-sort-text'),
+        manage.elWithClasses('', '', `fas fa-sort-down`, 'i')
+    );
     DOM.sortTskContents.append(
-        manage.createPara('Sort by', ''),
         manage.elWithClasses('By Due Date', 'sort-due', 'sort-items', 'div'),
-        manage.elWithClasses('By Task', 'sort-tasktitle', 'sort-items', 'div'),
+        manage.elWithClasses('Alphabetically', 'sort-tasktitle', 'sort-items', 'div'),
         manage.elWithClasses('By Priority', 'sort-priority', 'sort-items', 'div'),
+    )
+    DOM.renamePrjModal.appendChild(DOM.renamePrjBox);
+    DOM.renameBtnsContainer.append(
+        DOM.renamePrjButton,
+        DOM.renamePrjCancel
+    )
+    DOM.renamePrjBox.append(
+        manage.createPara('Rename your project to:', ''),
+        DOM.renamePrjInput,
+        DOM.renameBtnsContainer
     )
 }
 
 //THIS SECTION IS MAINLY FOR COLOR PROPERTY MODIFICATION
-function colorModifier() {
+function colorModifier(i) {
+    if (i == 3) { //color contrast -- yellow background must've black font
+        document.querySelector(`textarea`).style.color = 'black';
+        document.documentElement.style.setProperty('--main-font', 'black');
+    } else {
+        document.documentElement.style.setProperty('--main-font', 'aliceblue');
+        document.querySelector(`textarea`).style.color = 'aliceblue';
+    }
     //modifying theme color attributes
     manage.modifyAttr(
         DOM.themeInner,
         'style',
-        `background: ${themes[1].inner}`
+        `background: ${themes[i].inner}`
     );
     //modifying sidebar color attributes
     manage.modifyAttr(
         DOM.sidebarHeader,
         'style',
-        `background: ${themes[1].header}`
+        `background: ${themes[i].header}`
     )
     manage.modifyAttr(
         DOM.sidebarContainer,
         'style',
-        `border-right: 16px dashed ${themes[1].inner}`
+        `border-right: 16px dashed ${themes[i].inner}`
     )
     manage.modifyAttr(
         DOM.sortPrjButton,
         'style',
-        `background: ${themes[1].sort}`
+        `background: ${themes[i].sort}`
     );
     manage.modifyAttr(
         DOM.sortTskButton,
         'style',
-        `background: white; color: ${themes[1].header};`
+        `background: white; color: ${themes[i].header};`
     );
 }
 
@@ -257,8 +318,8 @@ function sidebarEvents() {
             const tasks = [];
             let task = new Tasks
                 (false,
-                    "Click the circle to compete this task",
-                    "",
+                    "Click the checkbox to compete this task",
+                    '2999-01-14',
                     '2');
             tasks.push(task);
             //iterate through the loop to remove active state
@@ -267,7 +328,7 @@ function sidebarEvents() {
             //push the the project-related contents to the array database
             addNewProject(
                 this.value,
-                'Write your description here.',
+                '',
                 prjItems.length + 1,
                 tasks,
                 true
@@ -300,6 +361,7 @@ function sidebarEvents() {
         removeAllItems(DOM.prjList);
         populatePrjItems();
     });
+    //sort by number of tasks
     document.getElementById('sort-num-tasks').addEventListener('click', () => {
         myProjects.sort((a, b) => (a.tasks.length < b.tasks.length) ? 1 : -1);
         removeAllItems(DOM.prjList);
@@ -325,22 +387,102 @@ function sidebarEvents() {
             })
             DOM.tempTextarea.disabled = true;
         }
+        saveToLocalStorage();
     });
     //filter feature
     DOM.searchProjects.addEventListener('input', prjFilterItems);
+
+    //display settings
+    DOM.taskSettings.addEventListener('click', function () {
+        COG.settings.style.display = 'block';
+        COG.btnThemes.classList.add('active-tab');
+        COG.settingsBtnCont.append(COG.btnApply, COG.btnClose);
+        COG.settingsMain.append(COG.themesCont, COG.settingsBtnCont);
+    });
+    COG.btnClose.addEventListener('click', function () {
+        removeAllItems(COG.settingsMain);
+        COG.btnData.classList.remove('active-tab');
+        COG.settings.style.display = 'none';
+    })
+    COG.btnThemes.addEventListener('click', function () {
+        const children = COG.tabs.children;
+        for (let i = 0; i < children.length; i++) {
+            children[i].classList.remove('active-tab');
+        };
+        this.classList.add('active-tab');
+        removeAllItems(COG.settingsMain);
+        removeAllItems(COG.settingsBtnCont);
+        COG.settingsBtnCont.append(COG.btnApply, COG.btnClose);
+        COG.themesCont.appendChild(COG.settingsBtnCont);
+        COG.settingsMain.append(COG.themesCont);
+    })
+    COG.btnData.addEventListener('click', function () {
+        const children = COG.tabs.children;
+        for (let i = 0; i < children.length; i++) {
+            children[i].classList.remove('active-tab');
+        };
+        this.classList.add('active-tab');
+        removeAllItems(COG.settingsMain);
+        removeAllItems(COG.settingsBtnCont);
+        COG.settingsBtnCont.append(COG.btnClose);
+        COG.settingsMain.append(COG.btnClearData, COG.settingsBtnCont);
+    });
+    COG.btnApply.addEventListener('click', function(){
+        const themes = document.querySelectorAll('input[name=themes]');
+        console.log(themes.length)
+            for(let i = 0; i < themes.length; i++){
+                if(themes[i].checked){ 
+                    colorModifier(i);
+                    localStorage.setItem("savedTheme", i);
+                }
+            }
+    })
+    COG.btnClearData.addEventListener('click', function () {
+        localStorage.removeItem("savedData");
+        myProjects.splice(0, myProjects.length);
+        removeAllItems(DOM.prjList);
+        DOM.displayTotal(0);
+        clearTasksContents();
+    });
 }
+
+//iterate throughout the checked tasks thene re-display the updated array
+function taskCompletionBtn(prjIndex) {
+    const todos = document.querySelectorAll('.task-checklist');
+    let completedTasks = 0;
+    let index = todos.length;
+    while (index--){
+        if (todos[index].checked == true) {
+            completedTasks++;
+            myProjects[prjIndex].tasks.splice(index, 1);
+        }
+    }
+    updateDisplay();
+    //saveToLocalStorage();
+}
+//sort todos by priority
 function sortByPriority(i) {
     document.getElementById('sort-priority').addEventListener('click', function () {
         myProjects[i].tasks.sort((a, b) => (a.priority < b.priority) ? 1 : -1);
         updateDisplay();
     });
 }
+
+//sort todos alphabetically
 function sortByTODO(i) {
     document.getElementById('sort-tasktitle').addEventListener('click', function () {
-        myProjects[i].tasks.sort((a, b) => (a.toUpperCase().desc < b.toUpperCase().desc) ? 1 : -1);
+        myProjects[i].tasks.sort((a, b) => (a.desc.toUpperCase() > b.desc.toUpperCase()) ? 1 : -1);
         updateDisplay();
     });
 }
+
+function sortByDueDate(i) {
+    document.getElementById('sort-due').addEventListener('click', function () {
+        myProjects[i].tasks.sort((a, b) => (a.dueDate > b.dueDate) ? 1 : -1);
+        updateDisplay();
+    });
+}
+//show sort contents when btn is hovered
 function sortMouseOver(obj, contents) {
     //displays dropdown content after hover
     obj.addEventListener('mouseover', () => {
@@ -364,7 +506,7 @@ function submitForm() {
                 const task = new Tasks(
                     false,
                     document.getElementById('form-input').value,
-                    "",
+                    document.getElementById('due-date').value,
                     document.getElementById('form-prio').value
                 )
                 myProjects[i].tasks.push(task);
@@ -374,7 +516,7 @@ function submitForm() {
     });
 }
 
-//This filter the items that does not contain in the value
+//This filter the character that does not contain in the value
 function prjFilterItems() {
     let filterValue = document.getElementById('prj-filter').value.toUpperCase();
     const prjItems = document.querySelectorAll('.prj-items');
@@ -409,7 +551,6 @@ function removePrjItem(i) {
         el.addEventListener('click', (e) => {
             e.stopPropagation();
             if (myProjects[index].id == i + 1) {
-                console.log("atleast once");
                 clearTasksIfActiveNotExists(i);
                 myProjects.splice(i, 1);
                 DOM.displayTotal(myProjects.length);
@@ -418,6 +559,36 @@ function removePrjItem(i) {
                 prjIdDecrement(i);
             }
         });
+    });
+    saveToLocalStorage();
+}
+function renamePrjItem(i) {
+    //remove project item
+    document.querySelectorAll(`.prj-rename`).forEach((el, index) => {
+        el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (index == i) {
+                document.getElementById('content').append(DOM.renamePrjModal);
+                DOM.renamePrjInput.value = myProjects[i].name;
+                btnRenamePrjItem(i);
+                btnCancelPrjRename();
+            }
+        });
+    });
+}
+function btnCancelPrjRename() {
+    DOM.renamePrjCancel.addEventListener('click', () => {
+        document.getElementById('content').removeChild(DOM.renamePrjModal);
+    });
+}
+function btnRenamePrjItem(i) {
+    DOM.renamePrjButton.addEventListener('click', () => {
+        if (DOM.renamePrjInput.value !== '') {
+            myProjects[i].name = DOM.renamePrjInput.value;
+            removeAllItems(DOM.prjList);
+            populatePrjItems();
+            document.getElementById('content').removeChild(DOM.renamePrjModal);
+        }
     });
 }
 //decrement the greater id than deleted object by one  [note: id property is used as a creation date]
@@ -432,11 +603,17 @@ function prjIdDecrement(id) {
 //clear every ask element if deleted project/folder is active
 function clearTasksIfActiveNotExists(i) {
     if (myProjects[i].active === true) {
-        removeAllItems(DOM.taskContainer);
-        DOM.hideTaskTopSection();
-        DOM.taskContainer.appendChild(manage.createPara
-            ('You don\'t have any task at the moment.', 'empty-task-text'));
+        clearTasksContents();
     }
+    saveToLocalStorage();
+}
+
+function clearTasksContents(){
+    removeAllItems(DOM.taskContainer);
+    DOM.hideTaskTopSection();
+    DOM.taskContainer.appendChild(manage.createPara
+        ('You don\'t have any task at the moment.', 'empty-task-text'));
+    DOM.taskCompletion.style.display = 'none';
 }
 //remove all the project items as a process to populate effectively
 function removeAllItems(parent) {
@@ -449,7 +626,7 @@ function removeAllItems(parent) {
 function addProjectItemContents(e, l, i) {
     /*created here we can create new elements rather than modifying
     the existing element*/
-    let prjItem =
+    const prjItem =
         manage.elWithClasses('', '', 'prj-items', 'li');
     // const prjEdit = 
     //     manage.elWithClasses('')
@@ -459,25 +636,13 @@ function addProjectItemContents(e, l, i) {
         manage.elWithClasses('', `prj-edit${l}`, 'prj-edit', 'div'));
 
     document.getElementById(`prj-edit${l}`).append(
-        //manage.elWithClasses('', '', `fas fa-pen-square prj-rename`, 'i'),
+        manage.elWithClasses('', '', `fas fa-pen-square prj-rename`, 'i'),
         manage.elWithClasses('', '', `fas fa-trash-alt prj-remove`, 'i'));
     changePrjSelectStatus(prjItem, i);
-    console.log(`yes ${i}`);
     removePrjItem(i);
+    renamePrjItem(i);
 }
-function renamePrjItem() {
-    //remove project item
-    document.querySelectorAll(`.prj-rename`).forEach((el, index) => {
-        el.addEventListener('click', (e) => {
-            e.stopPropagation();
-            e.replaceChild(
 
-            )
-            removeAllItems(DOM.prjList);
-            populatePrjItems();
-        });
-    });
-}
 function changePrjSelectStatus(item, i) {
     if (myProjects[i].active == true) {
         item.classList.add('prj-active');
@@ -515,8 +680,26 @@ function createTaskForm() {
             "200"
         );
     input.autocomplete = 'off';
-    const labelPrio =
-        manage.createLabel('priority', 'Priority level: ');
+    const lblDate =
+        manage.createLabel('due-date', 'Due Date: ','', '');
+
+    //default date format to yyyy-mm-dd format - used for date-fns input
+    let today = new Date();
+    let dd = String(today.getDate()).padStart(2, '0');
+    let mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    let yyyy = today.getFullYear();
+
+    today = yyyy + '-' + mm + '-' + dd;
+    const date =
+        manage.createDate(
+            'due-date',
+            today,
+            today
+        )
+    const duedateWrapper = manage.elWithClasses('', '', '', 'div')
+    const prioWrapper = manage.elWithClasses('', '', '', 'div')
+    const lblPrio =
+        manage.createLabel('priority', 'Priority level: ', '','');
     const ddPrio =
         manage.createSelect('form-prio');
     const submit =
@@ -530,21 +713,28 @@ function createTaskForm() {
         manage.createSelectOption('4', '4'),
         manage.createSelectOption('5', '5')
     );
-    upperForm.append(input, labelPrio, ddPrio);
+    prioWrapper.append(lblPrio, ddPrio);
+    duedateWrapper.append(lblDate, date);
+    upperForm.append(input, duedateWrapper, prioWrapper);
+    input.focus();
     submitForm();
 }
 
+//populate the task container with todos, mainly use to display the tasks or re-render when there's a data update
 function populateTaskItems(prjIndex) {
-    console.log('t00');
     for (let i = 0; i < myProjects[prjIndex].tasks.length; i++) {
         DOM.displayTaskItem(prjIndex, i);
-        console.log('t11');
     }
-    createTaskForm();
+    DOM.taskCompletion.onclick = () => {
+        taskCompletionBtn(prjIndex);
+    }
+        createTaskForm();
+
 
     //add event listener every data update
     sortByPriority(prjIndex);
     sortByTODO(prjIndex);
+    sortByDueDate(prjIndex);
 }
 
 //disable every active element to choose a new active element
@@ -558,6 +748,10 @@ function disableActiveStatus() {
     });
 }
 
+// function completedTasksNotification(){
+
+// }
+
 //when clicking a project item it is set as an active project
 function setActiveStatus() {
     const prjItems = document.querySelectorAll('.prj-items');
@@ -570,8 +764,10 @@ function setActiveStatus() {
             updateDisplay();
         })
     });
+    saveToLocalStorage();
 };
 
+//updates the task section
 function updateDisplay() {
     let len = myProjects.length
     for (let i = 0; i < len; i++) {
@@ -579,17 +775,26 @@ function updateDisplay() {
             displayTaskTopElements(i, len);
             removeAllItems(DOM.taskContainer);
             populateTaskItems(i);
+            DOM.taskCompletion.style.display = 'block';
         }
     }
+    saveToLocalStorage();
 }
 
-//function dataStorage()
+//save the main database a.k.a projects to the local storage
+const saveToLocalStorage = () => {
+    localStorage.setItem("savedData", JSON.stringify(myProjects));
+}
+
+//main website output
 //display, so the user/client can see the elements
 const output = () => {
     attachDOM();
     visualSettings();
     DOM.hideTaskTopSection();
-    colorModifier();
+    //If local storage is not empty, therefore display the items
+    if (myProjects.length !== 0) { populatePrjItems(); }
+    colorModifier(themeNum);
     sidebarEvents();
 }
 (output());
