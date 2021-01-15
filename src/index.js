@@ -64,7 +64,9 @@ const DOM = (() => {
 	const magnifyIcon =
         manage.elWithClasses('', '', 'fas fa-search', 'i');
 	const addButton =
-        manage.elWithClasses('', '', 'fas fa-plus-circle', 'i');
+		manage.elWithClasses('', '', 'fas fa-plus-circle', 'i');
+	const hideSidebar =
+		manage.elWithClasses('', '', 'fas fa-arrow-circle', 'i');
 
 	// sorting elements
 	const sortPrjButtonWrapper =
@@ -113,6 +115,8 @@ const DOM = (() => {
         manage.elWithClasses('', 'task-container', 'task-container', 'div');
 	const taskCompletion =
         manage.elWithClasses('Complete tasks', 'task-finish-btn', '', 'button');
+	const txtTskCompletionCont =
+		manage.elWithClasses('', 'task-completion-cont', '', 'div');
 
 	// sorting task feature
 	const sortTskButtonWrapper =
@@ -122,6 +126,7 @@ const DOM = (() => {
 	const sortTskContents =
         manage.elWithClasses('', '', 'dropdown-content', 'div');
 
+	//rename section for proejcts and tasks
 	const renamePrjModal =
         manage.elWithClasses('', '', 'prj-rnm-modal', 'div');
 	const renamePrjBox =
@@ -134,6 +139,19 @@ const DOM = (() => {
         manage.elWithClasses('Rename', 'prj-rnm-btn', '', 'button');
 	const renamePrjCancel =
         manage.elWithClasses('Cancel', 'prj-rnm-cancel', '', 'button');
+
+	const renameTskModal =
+        manage.elWithClasses('', '', 'tsk-rnm-modal', 'div');
+	const renameTskBox =
+		manage.elWithClasses('', '', 'tsk-rnm-box', 'div');
+	const renameTskInput =
+        manage.createInput('text', 'tsk-rnm-input', '', '', true, '500');
+	const renameTskBtns =
+        manage.elWithClasses('', '', '', 'div');
+	const renameTskButton =
+        manage.elWithClasses('Save', 'tsk-rnm-btn', '', 'button');
+	const renameTskCancel =
+		manage.elWithClasses('Cancel', 'tsk-rnm-cancel', '', 'button');
 
 	function displayTaskItem(prjIndex, i) {
 		const taskContainer =
@@ -180,6 +198,7 @@ const DOM = (() => {
 		projectContainer,
 		filterContainer,
 		addButton,
+		txtTskCompletionCont,
 		sortPrjButtonWrapper,
 		magnifyIcon,
 		searchProjects,
@@ -217,14 +236,19 @@ const DOM = (() => {
 // this appends the children to their corresponding parents
 const attachDOM = () => {
 	// main theme section
-	document.getElementById('content').append(DOM.themeOuter, DOM.taskCompletion);
+	document.getElementById('content').append(
+		DOM.themeOuter,
+		DOM.taskCompletion,
+		DOM.txtTskCompletionCont,
+	);
 	DOM.themeOuter.appendChild(DOM.themeInner);
 	DOM.themeInner.append(DOM.sidebarContainer, DOM.mainSection);
 
 	// sidebar section
 	DOM.sidebarContainer
 		.append(DOM.sidebarHeader, DOM.filterContainer, DOM.projectContainer);
-	DOM.sidebarHeader.append(manage.createPara('My Projects', ''), DOM.prjNum, DOM.addButton);
+	DOM.sidebarHeader.append(
+		manage.createPara('My Projects', ''), DOM.prjNum, DOM.addButton);
 
 	// sidebar -> filter/sort section
 	DOM.filterContainer.append(DOM.sortPrjButtonWrapper, DOM.searchbarWrapper);
@@ -286,7 +310,8 @@ const attachDOM = () => {
 
 // THIS SECTION IS MAINLY FOR COLOR PROPERTY MODIFICATION
 function colorModifier(i) {
-	if (i === 3) { // color contrast -- yellow background must've black font
+	const num = Number(i);
+	if (num === 3) { // color contrast -- yellow background must've black font
 		document.querySelector('textarea').style.color = 'black';
 		document.documentElement.style.setProperty('--main-font', 'black');
 	} else {
@@ -479,23 +504,23 @@ function sidebarEvents() {
 // iterate throughout the checked tasks thene re-display the updated array
 function taskCompletionBtn(prjIndex) {
 	const todos = document.querySelectorAll('.task-checklist');
-	let completedTasks = 0;
+	const totalTasks = todos.length;
 	let index = todos.length;
 	while (index--) {
 		if (todos[index].checked === true) {
-			completedTasks++;
 			myProjects[prjIndex].tasks.splice(index, 1);
 		}
 	}
 	updateDisplay();
-	// saveToLocalStorage();
+	const completedTasks = totalTasks - document.querySelectorAll('.task-checklist').length;
+	completedTasksNotif(completedTasks);
 }
 // sort todos by priority
 function sortByPriority() {
 	document.getElementById('sort-priority').addEventListener('click', () =>{
 		for (let i = 0; i < myProjects.length; i++) {
 			if (myProjects[i].active === true) {
-				myProjects[i].tasks.sort((a, b) => ((a.priority < b.priority) ? 1 : -1));
+				myProjects[i].tasks.sort((a, b) => ((a.priority > b.priority) ? 1 : -1));
 				updateDisplay();
 			}
 		}
@@ -619,7 +644,11 @@ function btnRenamePrjItem(i) {
 		}
 	});
 }
+function btnRenameTskItem(i){
+	document.querySelector(`fas fa-ellipsis-v`).addEventListener('click', () => {
 
+	});
+}
 function renamePrjItem(i) {
 	// remove project item
 	document.querySelectorAll('.prj-rename').forEach((el, index) => {
@@ -783,9 +812,25 @@ function disableActiveStatus() {
 	});
 }
 
-// function completedTasksNotification(){
-
-// }
+function completedTasksNotif(num) {
+	if (DOM.txtTskCompletionCont.childElementCount > 0) {
+		DOM.txtTskCompletionCont.removeChild(DOM.txtTskCompletionCont.firstChild);
+	}
+	if (num === 0) {
+		const tskCompletedText =
+			manage.createPara('You must complete a task', 'notasks-notif');
+		DOM.txtTskCompletionCont.appendChild(tskCompletedText);
+	} else if (num === 1) {
+		const tskCompletedText =
+				manage.createPara('You completed one task', 'tasks-completion-notif');
+		DOM.txtTskCompletionCont.appendChild(tskCompletedText);
+	}
+	else {
+		const tskCompletedText =
+				manage.createPara(`You completed ${num} tasks`, 'tasks-completion-notif');
+		DOM.txtTskCompletionCont.appendChild(tskCompletedText);
+	}
+}
 
 // when clicking a project item it is set as an active project
 function setActiveStatus() {
@@ -822,10 +867,10 @@ function updateDisplay() {
 const output = () => {
 	attachDOM();
 	visualSettings();
+	colorModifier(themeNum);
 	DOM.hideTaskTopSection();
 	// If local storage is not empty, therefore display the items
 	if (myProjects.length !== 0) { populatePrjItems(); }
-	colorModifier(themeNum);
 	sidebarEvents();
 };
-(output());
+output();

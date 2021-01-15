@@ -77,14 +77,14 @@ const visualSettings = () => {
 	COG.btnThemes.appendChild(manage.createPara('Themes', ''));
 	COG.btnData.appendChild(manage.createPara('Data', ''));
 	COG.settings.style.display = 'none';
-	COG.lbl_red.appendChild(COG.theme_red);
-	COG.lbl_blue.appendChild(COG.theme_blue);
-	COG.lbl_green.appendChild(COG.theme_green);
-	COG.lbl_yellow.appendChild(COG.theme_yellow);
+	COG.lblRed.appendChild(COG.themeRed);
+	COG.lblBlue.appendChild(COG.themeBlue);
+	COG.lblGreen.appendChild(COG.themeGreen);
+	COG.lblYellow.appendChild(COG.themeYellow);
 	COG.themesCont.append(
 		COG.themesSelectionPara,
-		COG.lbl_red, COG.lbl_blue,
-		COG.lbl_green, COG.lbl_yellow,
+		COG.lblRed, COG.lblBlue,
+		COG.lblGreen, COG.lblYellow,
 	);
 };
 
