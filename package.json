@@ -1,6 +1,6 @@
 {
   "name": "Todo-list",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "This is an app mainly focused on task-oriented users.",
   "main": "index.js",
   "scripts": {
