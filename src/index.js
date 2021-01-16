@@ -14,10 +14,20 @@ import { themes, COG, visualSettings } from './modules/themes.js';
 // global data
 let myProjects = [];
 let themeNum = 0;
+let iconFormat = 'fas';
+
+/*pre-conditions before DOM load - normally true during 2nd run only
+if the user interacts with a feature that acquires data*/
 if (localStorage.getItem('savedData') !== null) {
 	myProjects = JSON.parse(localStorage.getItem('savedData'));
+}
+if (localStorage.getItem('savedTheme') !== null) {
 	themeNum = localStorage.getItem('savedTheme');
 }
+if (localStorage.getItem('savedSetFormat') !== null) {
+	iconFormat = localStorage.getItem("savedSetFormat");
+}
+
 
 // save the main database a.k.a projects to the local storage
 const saveToLocalStorage = () => {
@@ -42,10 +52,13 @@ class Tasks {
 		this.priority = priority;
 	}
 }
+
+//add prj data to the database or array of objects
 function addNewProject(name, desc, id, tasks, active) {
 	const project = new Projects(name, desc, id, tasks, active);
 	myProjects.push(project);
 }
+
 // DOM instances
 const DOM = (() => {
 	const themeOuter =
@@ -449,28 +462,22 @@ function sidebarEvents() {
 		COG.settingsMain.append(COG.themesCont, COG.settingsBtnCont);
 	});
 	DOM.taskBtnFormat.addEventListener('click', function () {
-		//const taskbox1 = querySelector(.taskbox);
 		const child = this.querySelector('i');
-		console.log(this.childElementCount);
-		if (child.classList.contains('fas')) {
-			DOM.taskContainer.setAttribute('style', `display: flex; flex-wrap: wrap;`);
-			this.removeChild(child);
-			this.appendChild(DOM.taskSqrFormat);
-		} else {
-			DOM.taskContainer.removeAttribute('style');
-			this.removeChild(child);
-			this.appendChild(DOM.taskListFormat);
-		}
-		updateDisplay();
+		toggleFormat(child);
+
+		//re-add the event listeners during task format switch
 		sortByPriority();
 		sortByTODO();
 		sortByDueDate();
 	});
+
 	COG.btnClose.addEventListener('click', function () {
 		removeAllItems(COG.settingsMain);
 		COG.btnData.classList.remove('active-tab');
 		COG.settings.style.display = 'none';
 	});
+
+	//settings tab functionality -- mainly append/remove DOM manipulation
 	COG.btnThemes.addEventListener('click', function () {
 		const children = COG.tabs.children;
 		for (let i = 0; i < children.length; i++) {
@@ -516,7 +523,35 @@ function sidebarEvents() {
 	sortByDueDate();
 }
 
-// iterate throughout the checked tasks thene re-display the updated array
+// switch to squared icon if it is currently in list format
+function toggleFormat(child) {
+	if (child.classList.contains('fas')) {
+		DOM.taskContainer.setAttribute('style', `display: flex; flex-wrap: wrap;`);
+		DOM.taskBtnFormat.removeChild(child);
+		DOM.taskBtnFormat.appendChild(DOM.taskSqrFormat);
+		localStorage.setItem("savedSetFormat", 'far');
+	} else { //vice versa (check previous comment)
+		DOM.taskContainer.removeAttribute('style');
+		DOM.taskBtnFormat.removeChild(child);
+		DOM.taskBtnFormat.appendChild(DOM.taskListFormat);
+		localStorage.setItem("savedSetFormat", 'fas');
+	}
+	updateDisplay();
+}
+
+function loadSavedFormat(child) {
+	if (child.classList.contains(iconFormat)) {
+		DOM.taskContainer.removeAttribute('style');
+		DOM.taskBtnFormat.removeChild(child);
+		DOM.taskBtnFormat.appendChild(DOM.taskListFormat);
+	} else { //vice versa (check previous comment)
+		DOM.taskContainer.setAttribute('style', `display: flex; flex-wrap: wrap;`);
+		DOM.taskBtnFormat.removeChild(child);
+		DOM.taskBtnFormat.appendChild(DOM.taskSqrFormat);
+	}
+	updateDisplay();
+}
+// iterate throughout the checked tasks then re-display the updated array
 function taskCompletionBtn(prjIndex) {
 	const todos = document.querySelectorAll('.task-checklist');
 	const totalTasks = todos.length;
@@ -547,12 +582,10 @@ function sortByTODO() {
 	document.getElementById('sort-tasktitle').addEventListener('click', () => {
 		for (let i = 0; i < myProjects.length; i++) {
 			if (myProjects[i].active === true) {
-				myProjects[i].tasks.sort((a, b) => {
-					(a.desc.toUpperCase() > b.desc.toUpperCase()) ? 1 : -1;
-				});
-				updateDisplay();
+				myProjects[i].tasks.sort((a, b) => ((a.desc.toUpperCase() > b.desc.toUpperCase()) ? 1 : -1));
 			}
 		}
+		updateDisplay();
 	});
 }
 
@@ -939,7 +972,6 @@ function completedTasksNotif(num) {
 function setActiveStatus() {
 	const prjItems = document.querySelectorAll('.prj-items');
 	prjItems.forEach((item, i) => {
-		// eslint-disable-next-line no-unused-vars
 		item.addEventListener('click', function (e) {
 			disableActiveStatus(prjItems);
 			myProjects[i].active = true;
@@ -975,6 +1007,7 @@ const output = () => {
 	// If local storage is not empty, therefore display the items
 	if (myProjects.length !== 0) { populatePrjItems(); }
 	sidebarEvents();
+	const child = DOM.taskBtnFormat.querySelector('i');
+	loadSavedFormat(child);
 };
-console.log(myProjects);
 output();
